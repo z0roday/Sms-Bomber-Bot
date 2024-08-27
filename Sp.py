@@ -117,6 +117,29 @@ def reset_user_usage(user_id):
     conn.commit()
     conn.close()
 
+def ban_user(user_id, duration_minutes):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    block_until = datetime.now() + timedelta(minutes=duration_minutes)
+    cursor.execute('''
+    UPDATE users 
+    SET is_blocked = TRUE, block_until = %s
+    WHERE user_id = %s
+    ''', (block_until, user_id))
+    conn.commit()
+    conn.close()
+
+def unban_user(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+    UPDATE users 
+    SET is_blocked = FALSE, block_until = NULL
+    WHERE user_id = %s
+    ''', (user_id,))
+    conn.commit()
+    conn.close()
+
 def block_user(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -153,9 +176,10 @@ def start(message):
             bot.reply_to(message, "You have reached your usage limit. Please try again later.")
     else:
         markup = telebot.types.InlineKeyboardMarkup()
+        github_button = telebot.types.InlineKeyboardButton(text='GitHub', url='https://github.com/z0roday')
         join_button = telebot.types.InlineKeyboardButton(text='Join Channel', url=f'https://t.me/{MAIN_CHANNEL_ID[1:]}')
         check_button = telebot.types.InlineKeyboardButton(text='I have become a member', callback_data='check_membership')
-        markup.add(join_button, check_button)
+        markup.add(join_button, github_button, check_button)
         bot.reply_to(message, "Please join our channel first:", reply_markup=markup)
 
 def show_admin_panel(chat_id):
@@ -163,7 +187,56 @@ def show_admin_panel(chat_id):
     markup.add(telebot.types.KeyboardButton("Admin Info"))
     markup.add(telebot.types.KeyboardButton("Broadcast"))
     markup.add(telebot.types.KeyboardButton("Add Admin"))
+    markup.add(telebot.types.KeyboardButton("Ban User"))
+    markup.add(telebot.types.KeyboardButton("Unban User"))  
     bot.send_message(chat_id, "Admin panel:", reply_markup=markup)
+
+def process_ban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT user_id, numeric_id FROM users WHERE numeric_id = %s', (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            bot.reply_to(message, f"User found. User ID: {user[0]}, Numeric ID: {user[1]}")
+            bot.reply_to(message, "Please enter the ban duration in minutes:")
+            bot.register_next_step_handler(message, process_ban_duration, user[0])
+        else:
+            bot.reply_to(message, "User not found. Please check the numeric ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
+
+def process_unban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT user_id, numeric_id, is_blocked FROM users WHERE numeric_id = %s', (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            if user[2]:  
+                unban_user(user[0])
+                bot.reply_to(message, f"User with ID {user[1]} has been unbanned.")
+            else:
+                bot.reply_to(message, f"User with ID {user[1]} is not currently banned.")
+        else:
+            bot.reply_to(message, "User not found. Please check the numeric ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
+
+def process_ban_duration(message, user_id):
+    if message.text.isdigit():
+        duration = int(message.text)
+        ban_user(user_id, duration)
+        bot.reply_to(message, f"User with ID {user_id} has been banned for {duration} minutes.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a number for the ban duration in minutes.")
+
 
 @bot.message_handler(func=lambda message: message.text == "Admin Info")
 def admin_info_button(message):
