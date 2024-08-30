@@ -178,7 +178,7 @@ def run_bot():
             bot.polling(none_stop=True, interval=1, timeout=20)
         except Exception as e:
             logger.error(f"Bot polling error: {e}")
-            sleep(15)
+            sleep(0.4)
 
 @bot.message_handler(func=lambda message: message.text == 'Admin Panel')
 def handle_admin_panel(message):
@@ -318,6 +318,56 @@ def bombing(chat_id, phone, count, stop_event):
         sleep(0.2)
     bot.send_message(chat_id, "Bombing finished")
     del bombing_events[chat_id]
+def process_ban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT user_id, numeric_id FROM users WHERE numeric_id = %s', (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            bot.reply_to(message, f"User found. User ID: {user[0]}, Numeric ID: {user[1]}")
+            bot.reply_to(message, "Please enter the ban duration in minutes:")
+            bot.register_next_step_handler(message, process_ban_duration, user[0])
+        else:
+            bot.reply_to(message, "User not found. Please check the numeric ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
+
+def process_unban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT user_id, numeric_id, is_blocked FROM users WHERE numeric_id = %s', (user_id,))
+        user = cursor.fetchone()
+        conn.close()
+
+        if user:
+            if user[2]:  # Check if the user is blocked
+                unban_user(user[0])
+                bot.reply_to(message, f"User with ID {user[1]} has been unbanned.")
+            else:
+                bot.reply_to(message, f"User with ID {user[1]} is not currently banned.")
+        else:
+            bot.reply_to(message, "User not found. Please check the numeric ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
+
+def admin_info_command(message):
+    # Implement admin info logic here
+    bot.reply_to(message, "Admin info: [Your admin info here]")
+
+def process_ban_duration(message, user_id):
+    if message.text.isdigit():
+        duration = int(message.text)
+        ban_user(user_id, duration)
+        bot.reply_to(message, f"User with ID {user_id} has been banned for {duration} minutes.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a number for the ban duration in minutes.")
+
 @bot.callback_query_handler(func=lambda call: call.data == "cancel_bombing")
 def cancel_bombing_callback(call):
     chat_id = call.message.chat.id
