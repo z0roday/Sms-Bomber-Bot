@@ -186,11 +186,11 @@ def check_membership(user_id):
 def start(message):
     if check_membership(message.from_user.id):
         if is_admin(message.from_user.id):
-            welcome_message = f"Welcome, Admin {message.from_user.first_name}! You have full access."
+            welcome_message = f"Welcome, Admin {message.from_user.first_name}"
         elif check_user_limit(message.from_user.id):
             welcome_message = f"Welcome, {message.from_user.first_name}!"
         else:
-            welcome_message = "You have reached your usage limit. Please try again later."
+            welcome_message = "You have reached your usage limit"
         
         save_user(message.from_user.id, message.from_user.username)
         keyboard = create_keyboard(message.from_user.id)
@@ -270,16 +270,16 @@ def callback_query(call):
         bot.answer_callback_query(call.id, url=support_link)
     elif call.data == 'sms':
         bot.answer_callback_query(call.id)
-        bot.send_message(call.message.chat.id, "Please enter your phone number (11 digits):")
+        bot.send_message(call.message.chat.id, "Please enter your Target Phone: ex 09000000000")
         bot.register_next_step_handler(call.message, get_phone)
 
-@bot.message_handler(func=lambda message: message.text in ['Support', 'SMS'])
+@bot.message_handler(func=lambda message: message.text in ['Support', 'Sms Bomber'])
 def handle_main_buttons(message):
     if message.text == 'Support':
         support_link = "https://t.me/m/Jppbk8KzMWEx"  # Replace with your actual support link
         bot.reply_to(message, f"For support Click Link: {support_link}")
-    elif message.text == 'SMS':
-        bot.reply_to(message, "Please enter your phone number (11 digits):")
+    elif message.text == 'Sms Bomber':
+        bot.reply_to(message, "Please enter your Target Phone Number: ex 09000000000")
         bot.register_next_step_handler(message, get_phone)
 
 def get_phone(message):
@@ -287,7 +287,7 @@ def get_phone(message):
         start(message)
         return
     if not check_user_limit(message.from_user.id):
-        bot.reply_to(message, "You have reached your usage limit. Please try again later.")
+        bot.reply_to(message, "You have reached your usage limit")
         return
     
     phone = message.text
@@ -423,7 +423,7 @@ def process_set_global_limit(message):
 
 if __name__ == "__main__":
     setup_database()
-    add_admin(6157703844)  # Make sure this admin ID is correct
+    add_admin(6157703844)  
     print("Bot is starting...")
     while True:
         try:
