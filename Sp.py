@@ -268,7 +268,7 @@ def callback_query(call):
     elif call.data == 'support':
         support_link = "https://t.me/m/Jppbk8KzMWEx"  # Replace with your actual support link
         bot.answer_callback_query(call.id, url=support_link)
-    elif call.data == 'sms':
+    elif call.data == 'Sms Bomber':
         bot.answer_callback_query(call.id)
         bot.send_message(call.message.chat.id, "Please enter your Target Phone: ex 09000000000")
         bot.register_next_step_handler(call.message, get_phone)
