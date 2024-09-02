@@ -1,67 +1,106 @@
+import os
+from dotenv import load_dotenv
 import telebot
+from telebot.asyncio_storage import StateMemoryStorage
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+import logging
+import mysql.connector
 from threading import Thread, Event
-from Api import sms, call
 from time import sleep
 from inspect import getmembers, isfunction
-import mysql.connector
 from datetime import datetime, timedelta
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
-from telebot.asyncio_storage import StateMemoryStorage
-import logging
 
+# Import your SMS and call modules
+from Api import sms, call
+
+# Load environment variables
+load_dotenv()
+
+# Logging configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-bot_token = '7330729864:AAE1QK7hCAEFmtrpaXd9ZjMObzO864uqSo4'
-bot = telebot.TeleBot(bot_token, state_storage=StateMemoryStorage())
+# Bot configuration
+bot_token = os.getenv('BOT_TOKEN')
+if not bot_token:
+    logger.error("BOT_TOKEN is not set in the environment variables.")
+    raise ValueError("BOT_TOKEN must be set in the environment variables.")
+
+try:
+    bot = telebot.TeleBot(bot_token, state_storage=StateMemoryStorage())
+    logger.info("Bot initialized successfully.")
+except Exception as e:
+    logger.error(f"Failed to initialize bot: {e}")
+    raise
+
 SMS_SERVICES = [i[0] for i in getmembers(sms, isfunction)]
 CALL_SERVICES = [i[0] for i in getmembers(call, isfunction)]
-MAIN_CHANNEL_ID = '@ExoShopVpn'
+MAIN_CHANNEL_ID = os.getenv('MAIN_CHANNEL_ID')
 
-DB_NAME = 'Exosms'
-DB_HOST = 'localhost'
-DB_USER = 'z0roday'
-DB_PASS = 'z0roday@@123%&&&'
+# Database configuration
+DB_NAME = os.getenv('DB_NAME', 'Exosms')
+DB_HOST = os.getenv('DB_HOST', 'localhost')
+DB_USER = os.getenv('DB_USER', 'z0roday')
+DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
 
 bombing_events = {}
 
 def setup_database():
-    conn = mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASS)
-    cursor = conn.cursor()
-    cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
-    cursor.execute(f"USE {DB_NAME}")
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id BIGINT UNIQUE,
-        username VARCHAR(255),
-        last_use DATETIME,
-        use_count INT DEFAULT 0,
-        is_blocked BOOLEAN DEFAULT FALSE,
-        block_until DATETIME,
-        custom_limit INT DEFAULT 2
-    )
-    ''')
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS admins (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        admin_id BIGINT UNIQUE
-    )
-    ''')
-    conn.commit()
-    conn.close()
+    try:
+        conn = mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASS)
+        cursor = conn.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {DB_NAME}")
+        cursor.execute(f"USE {DB_NAME}")
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id BIGINT UNIQUE,
+            username VARCHAR(255),
+            last_use DATETIME,
+            use_count INT DEFAULT 0,
+            is_blocked BOOLEAN DEFAULT FALSE,
+            block_until DATETIME,
+            custom_limit INT DEFAULT 2
+        )
+        ''')
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS admins (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            admin_id BIGINT UNIQUE
+        )
+        ''')
+        conn.commit()
+        logger.info("Database setup completed successfully.")
+    except mysql.connector.Error as err:
+        logger.error(f"Database setup error: {err}")
+        raise
+    finally:
+        if 'conn' in locals() and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 def get_db_connection():
-    return mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
+    try:
+        return mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASS, database=DB_NAME)
+    except mysql.connector.Error as err:
+        logger.error(f"Database connection error: {err}")
+        raise
 
 def execute_db_query(query, params=None, fetch=False):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute(query, params or ())
-    result = cursor.fetchall() if fetch else None
-    conn.commit()
-    conn.close()
-    return result
+    try:
+        cursor.execute(query, params or ())
+        result = cursor.fetchall() if fetch else None
+        conn.commit()
+        return result
+    except mysql.connector.Error as err:
+        logger.error(f"Database query error: {err}")
+        conn.rollback()
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
 def save_user(user_id, username):
     execute_db_query('''
@@ -88,7 +127,7 @@ def check_user_limit(user_id):
         use_count, last_use, is_blocked, block_until, custom_limit = result[0]
         if is_blocked:
             if block_until and datetime.now() > block_until:
-                unblock_user(user_id)
+                unban_user(user_id)
                 return True
             return False
         if use_count >= custom_limit:
@@ -135,13 +174,20 @@ def set_custom_limit(user_id, limit):
     WHERE user_id = %s
     ''', (limit, user_id))
 
-
 def check_membership(user_id):
     try:
         member = bot.get_chat_member(MAIN_CHANNEL_ID, user_id)
         return member.status in ['member', 'administrator', 'creator']
     except telebot.apihelper.ApiException:
+        logger.error(f"Failed to check membership for user {user_id}")
         return False
+
+def create_keyboard(user_id):
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(KeyboardButton('SMS'), KeyboardButton('Support'))
+    if is_admin(user_id):
+        keyboard.add(KeyboardButton('Admin Panel'))
+    return keyboard
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -163,22 +209,6 @@ def start(message):
         check_button = InlineKeyboardButton(text='Confirm Membership', callback_data='check_membership')
         markup.row(github_button, check_button)
         bot.reply_to(message, "Please join our channel first:", reply_markup=markup)
-
-def create_keyboard(user_id):
-    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton('SMS'), KeyboardButton('Support'))
-    if is_admin(user_id):
-        keyboard.add(KeyboardButton('Admin Panel'))
-    return keyboard
-
-def run_bot():
-    while True:
-        try:
-            logger.info("Starting bot polling...")
-            bot.polling(none_stop=True, interval=1, timeout=20)
-        except Exception as e:
-            logger.error(f"Bot polling error: {e}")
-            sleep(0.4)
 
 @bot.message_handler(func=lambda message: message.text == 'Admin Panel')
 def handle_admin_panel(message):
@@ -248,6 +278,12 @@ def callback_query(call):
 
 @bot.message_handler(func=lambda message: message.text == 'SMS')
 def handle_sms(message):
+    if not check_membership(message.from_user.id):
+        start(message)
+        return
+    if not check_user_limit(message.from_user.id):
+        bot.reply_to(message, "You have reached your usage limit. Please try again later.")
+        return
     bot.reply_to(message, "Please enter your Target Phone Number: ex 09000000000")
     bot.register_next_step_handler(message, get_phone)
 
@@ -256,13 +292,6 @@ def handle_support(message):
     bot.reply_to(message, "For support, please contact @z0roday")
 
 def get_phone(message):
-    if not check_membership(message.from_user.id):
-        start(message)
-        return
-    if not check_user_limit(message.from_user.id):
-        bot.reply_to(message, "You have reached your usage limit")
-        return
-    
     phone = message.text
     if not phone.isdigit() or len(phone) != 11:
         bot.reply_to(message, "Invalid input. Please enter a valid 11-digit phone number.")
@@ -276,10 +305,6 @@ def get_phone(message):
         bot.register_next_step_handler(message, get_count, phone)
 
 def get_count(message, phone):
-    if not check_membership(message.from_user.id) or not check_user_limit(message.from_user.id):
-        bot.reply_to(message, "You have reached your usage limit or are not a member. Please try again later.")
-        return
-   
     if not message.text.isdigit():
         bot.reply_to(message, "Invalid input. Please enter a numeric value between 1 and 30.")
         bot.register_next_step_handler(message, get_count, phone)
@@ -296,13 +321,10 @@ def get_count(message, phone):
         cancel_button = InlineKeyboardButton("Cancel Bombing", callback_data="cancel_bombing")
         markup.add(cancel_button)
         bot.send_message(message.chat.id, "Bombing started. You can cancel it using the button below:", reply_markup=markup)
-       
         Thread(target=bombing, args=(message.chat.id, phone, count, bombing_events[message.chat.id])).start()
     else:
         bot.reply_to(message, "Invalid input. Please enter a number between 1 and 30.")
         bot.register_next_step_handler(message, get_count, phone)
-
-
 def bombing(chat_id, phone, count, stop_event):
     x = 0
     phone = f"+98{phone[1:]}"
@@ -311,62 +333,20 @@ def bombing(chat_id, phone, count, stop_event):
             bot.send_message(chat_id, "Bombing cancelled.")
             return
         for k in range(len(SMS_SERVICES)):
-            Thread(target=getattr(sms, SMS_SERVICES[k]), args=[phone]).start()
+            try:
+                Thread(target=getattr(sms, SMS_SERVICES[k]), args=[phone]).start()
+            except Exception as e:
+                logger.error(f"Error in SMS service {SMS_SERVICES[k]} for phone {phone}: {e}")
         if (j != 0) and (j % 5) == 0:
-            Thread(target=getattr(call, CALL_SERVICES[x]), args=[phone]).start()
-            x = (x + 1) % len(CALL_SERVICES)
+            try:
+                Thread(target=getattr(call, CALL_SERVICES[x]), args=[phone]).start()
+                x = (x + 1) % len(CALL_SERVICES)
+            except Exception as e:
+                logger.error(f"Error in Call service {CALL_SERVICES[x]} for phone {phone}: {e}")
         sleep(0.2)
     bot.send_message(chat_id, "Bombing finished")
     del bombing_events[chat_id]
-def process_ban_user_id(message):
-    if message.text.isdigit():
-        user_id = int(message.text)
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT user_id, numeric_id FROM users WHERE numeric_id = %s', (user_id,))
-        user = cursor.fetchone()
-        conn.close()
 
-        if user:
-            bot.reply_to(message, f"User found. User ID: {user[0]}, Numeric ID: {user[1]}")
-            bot.reply_to(message, "Please enter the ban duration in minutes:")
-            bot.register_next_step_handler(message, process_ban_duration, user[0])
-        else:
-            bot.reply_to(message, "User not found. Please check the numeric ID and try again.")
-    else:
-        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
-
-def process_unban_user_id(message):
-    if message.text.isdigit():
-        user_id = int(message.text)
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT user_id, numeric_id, is_blocked FROM users WHERE numeric_id = %s', (user_id,))
-        user = cursor.fetchone()
-        conn.close()
-
-        if user:
-            if user[2]:  # Check if the user is blocked
-                unban_user(user[0])
-                bot.reply_to(message, f"User with ID {user[1]} has been unbanned.")
-            else:
-                bot.reply_to(message, f"User with ID {user[1]} is not currently banned.")
-        else:
-            bot.reply_to(message, "User not found. Please check the numeric ID and try again.")
-    else:
-        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
-
-def admin_info_command(message):
-    # Implement admin info logic here
-    bot.reply_to(message, "Admin info: [Your admin info here]")
-
-def process_ban_duration(message, user_id):
-    if message.text.isdigit():
-        duration = int(message.text)
-        ban_user(user_id, duration)
-        bot.reply_to(message, f"User with ID {user_id} has been banned for {duration} minutes.")
-    else:
-        bot.reply_to(message, "Invalid input. Please enter a number for the ban duration in minutes.")
 
 @bot.callback_query_handler(func=lambda call: call.data == "cancel_bombing")
 def cancel_bombing_callback(call):
@@ -428,8 +408,69 @@ def process_set_global_limit(message):
     else:
         bot.reply_to(message, "Invalid input. Please enter a numeric limit.")
 
+def process_ban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        result = execute_db_query('SELECT user_id FROM users WHERE user_id = %s', (user_id,), fetch=True)
+        if result:
+            bot.reply_to(message, f"User found. User ID: {user_id}")
+            bot.reply_to(message, "Please enter the ban duration in minutes:")
+            bot.register_next_step_handler(message, process_ban_duration, user_id)
+        else:
+            bot.reply_to(message, "User not found. Please check the user ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric user ID.")
+
+def process_ban_duration(message, user_id):
+    if message.text.isdigit():
+        duration = int(message.text)
+        ban_user(user_id, duration)
+        bot.reply_to(message, f"User with ID {user_id} has been banned for {duration} minutes.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a number for the ban duration in minutes.")
+
+def process_unban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        result = execute_db_query('SELECT user_id, is_blocked FROM users WHERE user_id = %s', (user_id,), fetch=True)
+        if result:
+            if result[0][1]:  # Check if the user is blocked
+                unban_user(user_id)
+                bot.reply_to(message, f"User with ID {user_id} has been unbanned.")
+            else:
+                bot.reply_to(message, f"User with ID {user_id} is not currently banned.")
+        else:
+            bot.reply_to(message, "User not found. Please check the user ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric user ID.")
+
+def admin_info_command(message):
+    total_users = execute_db_query('SELECT COUNT(*) FROM users', fetch=True)[0][0]
+    active_users = execute_db_query('SELECT COUNT(*) FROM users WHERE is_blocked = FALSE', fetch=True)[0][0]
+    blocked_users = execute_db_query('SELECT COUNT(*) FROM users WHERE is_blocked = TRUE', fetch=True)[0][0]
+    
+    admin_info = f"Total Users: {total_users}\n"
+    admin_info += f"Active Users: {active_users}\n"
+    admin_info += f"Blocked Users: {blocked_users}"
+    
+    bot.reply_to(message, admin_info)
+
 if __name__ == "__main__":
-    setup_database()
-    add_admin(6157703844)  # Add your admin ID here
-    logger.info("Bot is starting...")
-    run_bot()
+    try:
+        setup_database()
+        admin_id = os.getenv('ADMIN_ID')
+        if admin_id:
+            add_admin(int(admin_id))
+        else:
+            logger.warning("ADMIN_ID environment variable is not set")
+        logger.info("Bot is starting...")
+        while True:
+            try:
+                logger.info("Starting bot polling...")
+                bot.polling(none_stop=True, interval=1, timeout=20)
+            except Exception as e:
+                logger.error(f"Bot polling error: {e}")
+                sleep(5)  # Increased sleep time to avoid rapid reconnection attempts
+    except Exception as e:
+        logger.critical(f"Critical error: {e}")
+        raise
