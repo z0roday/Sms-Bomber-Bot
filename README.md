@@ -6,10 +6,6 @@
 
 ## How Do i Put My Bot Token in the Source 
 
-<b>By Useing Getenv</b>
-
-<h2>How</h2>
-
 <hr>
  
 
