@@ -1,0 +1,4 @@
+mysql.connector
+dotenv
+user_agent
+telebot 
