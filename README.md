@@ -49,7 +49,14 @@ Your DataBase Created `Where i Wrote change Exo and put your favorite thinds `
 
 ````
 cd Exo-Sms-Bomber-Bot-Backup
+
+
+<a src="hhtps://t.me/z0roday">
 pip -r install requriments.txt
 python Sp.py 
 ````
 And Run Your Bot 
+
+
+
+<a href="https://t.me/z0roday" target="_blank"><img src="https://s8.uupload.ir/files/telegram_3idt_thumb.png" border="0" alt="z0roday" /></a>
