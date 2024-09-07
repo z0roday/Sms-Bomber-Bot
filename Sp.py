@@ -10,17 +10,16 @@ from time import sleep
 from inspect import getmembers, isfunction
 from datetime import datetime, timedelta
 
-# Import your SMS and call modules
 from Api import sms, call
 
-# Load environment variables
+
 load_dotenv()
 
-# Logging configuration
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# Bot configuration
+
 bot_token = os.getenv('BOT_TOKEN')
 if not bot_token:
     logger.error("BOT_TOKEN is not set in the environment variables.")
@@ -37,7 +36,7 @@ SMS_SERVICES = [i[0] for i in getmembers(sms, isfunction)]
 CALL_SERVICES = [i[0] for i in getmembers(call, isfunction)]
 MAIN_CHANNEL_ID = os.getenv('MAIN_CHANNEL_ID')
 
-# Database configuration
+
 DB_NAME = os.getenv('DB_NAME', 'Exosms')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_USER = os.getenv('DB_USER', 'z0roday')
@@ -381,7 +380,7 @@ def process_broadcast(message):
         except Exception as e:
             logger.error(f"Failed to send message to user {user[0]}: {e}")
             fail_count += 1
-        sleep(0.1)  # Add a small delay to avoid hitting rate limits
+        sleep(0.1) 
     bot.reply_to(message, f"Broadcast message sent. Success: {success_count}, Failed: {fail_count}")
 
 def process_set_user_limit_id(message):
@@ -434,7 +433,7 @@ def process_unban_user_id(message):
         user_id = int(message.text)
         result = execute_db_query('SELECT user_id, is_blocked FROM users WHERE user_id = %s', (user_id,), fetch=True)
         if result:
-            if result[0][1]:  # Check if the user is blocked
+            if result[0][1]:  
                 unban_user(user_id)
                 bot.reply_to(message, f"User with ID {user_id} has been unbanned.")
             else:
@@ -470,7 +469,7 @@ if __name__ == "__main__":
                 bot.polling(none_stop=True, interval=1, timeout=20)
             except Exception as e:
                 logger.error(f"Bot polling error: {e}")
-                sleep(5)  # Increased sleep time to avoid rapid reconnection attempts
+                sleep(5)  
     except Exception as e:
         logger.critical(f"Critical error: {e}")
         raise
