@@ -58,7 +58,7 @@ python Sp.py
 And Run Your Bot 
 
 <p align="center">
-  <a href="https://t.me/z0roday" target="_blank"><img src="https://s8.uupload.ir/files/telegram_3idt_thumb.png" border="0" alt="z0roday" height="auto" width="200" style="border-radius:50%"/></a>
+  <a href="https://t.me/z0roday"><img src="https://s8.uupload.ir/files/telegram_3idt_thumb.png" alt="z0roday" style="border-radius:50%"/></a>
 </p>
 
 
