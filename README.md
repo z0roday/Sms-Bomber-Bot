@@ -58,7 +58,7 @@ python Sp.py
 And Run Your Bot 
 
 <p align="center">
-  <a href="https://t.me/z0roday"><img src="https://s8.uupload.ir/files/z0roday_dyhp.png" alt="z0roday" height=200 width=200 style="border-radius:50%"/></a>
+  <a href="https://t.me/z0roday"><img src="https://s8.uupload.ir/files/z0roday_dyhp.png" alt="z0roday" height=100 width=100 style="border-radius:50%"/></a>
 </p>
 
 
