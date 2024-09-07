@@ -1,9 +1,12 @@
-# v 2.0
+# Version
+
+## V 2.0
+
 <hr>
 
 ## How Do i Put My Bot Token in the Source 
 
-<h1><b>By Useing Getenv</b></h1>
+<b>By Useing Getenv</b>
 
 <h2>How</h2>
 
