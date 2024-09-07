@@ -62,7 +62,7 @@ And Run Your Bot
 ## Social Media
 
 <p>
-<a src="https://t.me/z0roday"><img scr="https://s8.uupload.ir/files/z0roday_655x.png" width=30 height=30></a>
+<a src="https://t.me/z0roday"><img href="https://s8.uupload.ir/files/z0roday_655x.png" width=30 height=30></a>
 </p>
 <p>
  <a src="https://instagram.com/z0roday">Instagram</a>
