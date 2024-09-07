@@ -61,7 +61,7 @@ And Run Your Bot
 
 ## Social Media
 
-<p>
+<p aline='left'>
 <a src="https://t.me/z0roday"><img href="https://s8.uupload.ir/files/z0roday_655x.png" width=30 height=30></a>
 </p>
 <p>
