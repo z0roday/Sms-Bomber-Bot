@@ -59,12 +59,3 @@ And Run Your Bot
 
 <hr>
 
-## Social Media
-
-<p aline='left'>
-<a src="https://t.me/z0roday"><img href="https://s8.uupload.ir/files/z0roday_655x.png" width=30 height=30></a>
-</p>
-<p>
- <a src="https://instagram.com/z0roday">Instagram</a>
-</p>
-
