@@ -50,6 +50,5 @@ Your DataBase Created `Where i Wrote change Exo and put your favorite thinds `
 cd Exo-Sms-Bomber-Bot-Backup
 pip -r install requriments.txt
 python Sp.py 
-
 ````
 And Run Your Bot 
