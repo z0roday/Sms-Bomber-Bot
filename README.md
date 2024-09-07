@@ -10,8 +10,8 @@
 <hr>
 
 <h1>Follow The Instructions</h1>
-create .env file inside the same folder `open with editor file`
-And put it in the bot token file like this `BOT_TOKEN=YOUR_TOKEN_BOT`
-Run This command `export BOT_TOKEN=YOUR_TOEKN_BOT`
-And this Command `echo $BOT_TOKEN`
+* create .env file inside the same folder `open with editor file`
+* And put it in the bot token file like this `BOT_TOKEN=YOUR_TOKEN_BOT`
+* Run This command `export BOT_TOKEN=YOUR_TOEKN_BOT`
+* And this Command `echo $BOT_TOKEN`
 
