@@ -57,5 +57,11 @@ python Sp.py
 ````
 And Run Your Bot 
 
+<hr>
+## Social Media
+
+<a src="https://t.me/z0roday"><b>Telegram</b></a>
+<a src="https://discord.gg/PczjGVyz"><b>Discord</b></a> 
+<a src+"https://instagram.com/z0roday"><b>instagram</b></a>
 
 
