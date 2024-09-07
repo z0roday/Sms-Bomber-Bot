@@ -61,10 +61,10 @@ And Run Your Bot
 
 ## Social Media
 
-<a src="https://t.me/z0roday"><b>Telegram</b></a>
-
-<a src="https://discord.gg/PczjGVyz"><b>Discord</b></a>
-
-<a src="https://instagram.com/z0roday"><b>instagram</b></a>
-
+<p>
+<a src="https://t.me/z0roday">Telegram</a>
+</p>
+<p>
+ <a src="https://instagram.com/z0roday">Instagram</a>
+</p>
 
