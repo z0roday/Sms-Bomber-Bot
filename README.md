@@ -1,6 +1,4 @@
-<img src="https://ibb.co/Fz63qrn"/>
-
-
+![ExoBot Banner]([https://ezengine.net/pages/samples/media/showcase-1.jpg](https://i.ibb.co/sqjRJft/Leonardo-Phoenix-A-breathtakingly-detailed-highcontrast-illust-3.jpg))
 
 # Version
 
