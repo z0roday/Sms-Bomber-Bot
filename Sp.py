@@ -10,6 +10,7 @@ from time import sleep
 from inspect import getmembers, isfunction
 from datetime import datetime, timedelta
 
+# github.com/z0orday
 
 from Api import sms, call
 
@@ -17,6 +18,7 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
 
 bot_token = os.getenv('BOT_TOKEN')
 if not bot_token:
@@ -43,6 +45,7 @@ DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
 bombing_events = {}
 
 
+# github.com/z0orday
 LANGUAGES = {
     'en': {
         'welcome': "Welcome, {}!",
@@ -219,6 +222,8 @@ def reset_user_usage(user_id):
     SET use_count = 0, last_use = NOW()
     WHERE user_id = %s
     ''', (user_id,))
+
+# github.com/z0orday
 
 def ban_user(user_id, duration_minutes):
     block_until = datetime.now() + timedelta(minutes=duration_minutes)
@@ -400,6 +405,9 @@ def callback_query(call):
         else:
             bot.answer_callback_query(call.id, LANGUAGES[language]['join_channel'])
 
+
+# github.com/z0orday
+
 def get_phone(message):
     language = get_user_language(message.from_user.id)
     phone = message.text
@@ -471,6 +479,8 @@ def cancel_bombing_callback(call):
         bot.answer_callback_query(call.id, LANGUAGES[language]['bombing_finished'])
 
 
+
+# github.com/z0orday
 
 if __name__ == "__main__":
     try:
