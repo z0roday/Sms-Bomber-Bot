@@ -19,7 +19,6 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-
 bot_token = os.getenv('BOT_TOKEN')
 if not bot_token:
     logger.error("BOT_TOKEN is not set in the environment variables.")
@@ -36,7 +35,6 @@ SMS_SERVICES = [i[0] for i in getmembers(sms, isfunction)]
 CALL_SERVICES = [i[0] for i in getmembers(call, isfunction)]
 MAIN_CHANNEL_ID = os.getenv('MAIN_CHANNEL_ID')
 
-
 DB_NAME = os.getenv('DB_NAME', 'Exosms')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_USER = os.getenv('DB_USER', 'z0roday')
@@ -44,8 +42,6 @@ DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
 
 bombing_events = {}
 
-
-# github.com/z0orday
 LANGUAGES = {
     'en': {
         'welcome': "Welcome, {}!",
@@ -186,6 +182,8 @@ def get_user_language(user_id):
 
 def update_user_language(user_id, language):
     execute_db_query('UPDATE users SET language = %s WHERE user_id = %s', (language, user_id))
+    keyboard = create_keyboard(user_id, language)
+    bot.send_message(user_id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
 
 def update_user_usage(user_id):
     execute_db_query('''
@@ -222,8 +220,6 @@ def reset_user_usage(user_id):
     SET use_count = 0, last_use = NOW()
     WHERE user_id = %s
     ''', (user_id,))
-
-# github.com/z0orday
 
 def ban_user(user_id, duration_minutes):
     block_until = datetime.now() + timedelta(minutes=duration_minutes)
@@ -273,10 +269,10 @@ def create_language_keyboard():
 
 def create_keyboard(user_id, language):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton('SMS'), KeyboardButton('Support'))
+    keyboard.add(KeyboardButton('SMS'), KeyboardButton(LANGUAGES[language]['support']))
     keyboard.add(KeyboardButton(LANGUAGES[language]['change_language']))
     if is_admin(user_id):
-        keyboard.add(KeyboardButton('Admin Panel'))
+        keyboard.add(KeyboardButton(LANGUAGES[language]['admin']))
     return keyboard
 
 @bot.message_handler(commands=['start'])
@@ -302,8 +298,7 @@ def start(message):
         check_button = InlineKeyboardButton(text=LANGUAGES[language]['confirm_membership'], callback_data='check_membership')
         markup.row(github_button, check_button)
         bot.reply_to(message, LANGUAGES[language]['join_channel'], reply_markup=markup)
-
-@bot.message_handler(func=lambda message: message.text == 'Admin Panel')
+@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['admin'])
 def handle_admin_panel(message):
     language = get_user_language(message.from_user.id)
     if is_admin(message.from_user.id):
@@ -328,7 +323,7 @@ def show_admin_panel(message):
     else:
         bot.reply_to(message, LANGUAGES[language]['no_permission'])
 
-@bot.message_handler(func=lambda message: message.text in [LANGUAGES[lang]['change_language'] for lang in LANGUAGES])
+@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['change_language'])
 def change_language(message):
     markup = create_language_keyboard()
     bot.reply_to(message, "Please select a language / لطفا یک زبان انتخاب کنید / الرجاء اختيار لغة", reply_markup=markup)
@@ -338,9 +333,7 @@ def callback_language(call):
     language = call.data.split('_')[1]
     user_id = call.from_user.id
     update_user_language(user_id, language)
-    keyboard = create_keyboard(user_id, language)
     bot.answer_callback_query(call.id, "Language updated / زبان به روز شد / تم تحديث اللغة")
-    bot.send_message(call.message.chat.id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
 
 @bot.message_handler(func=lambda message: message.text == 'SMS')
 def handle_sms(message):
@@ -356,7 +349,7 @@ def handle_sms(message):
     bot.reply_to(message, LANGUAGES[language]['enter_target'])
     bot.register_next_step_handler(message, get_phone)
 
-@bot.message_handler(func=lambda message: message.text == 'Support')
+@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['support'])
 def handle_support(message):
     language = get_user_language(message.from_user.id)
     bot.reply_to(message, LANGUAGES[language]['support'])
@@ -404,9 +397,6 @@ def callback_query(call):
             bot.send_message(call.message.chat.id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
         else:
             bot.answer_callback_query(call.id, LANGUAGES[language]['join_channel'])
-
-
-# github.com/z0orday
 
 def get_phone(message):
     language = get_user_language(message.from_user.id)
@@ -477,10 +467,6 @@ def cancel_bombing_callback(call):
         bot.edit_message_text(LANGUAGES[language]['bombing_cancelled'], chat_id=chat_id, message_id=call.message.message_id)
     else:
         bot.answer_callback_query(call.id, LANGUAGES[language]['bombing_finished'])
-
-
-
-# github.com/z0orday
 
 if __name__ == "__main__":
     try:
