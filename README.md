@@ -33,7 +33,7 @@
 3. `export ADMIN_ID=ID`
 
    
-If You Execute This Command `echo $BOT_TOKEN` And Your Bot Token Is Not Displayed in The CLI environment You Will Get An Error To Aviod Getting The Error Do All The Things I Said 
+If You Execute This Command `echo $BOT_TOKEN`, `echo $ADMIN_ID` And Your Bot Token Is Not Displayed in The CLI environment You Will Get An Error To Aviod Getting The Error Do All The Things I Said 
 
 ## Database 
 
