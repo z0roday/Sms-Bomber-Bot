@@ -22,7 +22,17 @@
 
 4. And this Command `echo $BOT_TOKEN`
 
+<hr>
 
+# Add Admin Id 
+
+1. open .env
+
+2. add this `ADMIN_ID=ID`
+
+3. `export ADMIN_ID=ID`
+
+   
 If You Execute This Command `echo $BOT_TOKEN` And Your Bot Token Is Not Displayed in The CLI environment You Will Get An Error To Aviod Getting The Error Do All The Things I Said 
 
 ## Database 
@@ -35,7 +45,7 @@ DB_HOST = os.getenv('DB_HOST', 'Database_Host')
 DB_USER = os.getenv('DB_USER', 'Database_Username')
 DB_PASS = os.getenv('DB_PASS', 'Database_Password')
 ````
-<h4>For Create User For Bomber Bot </h4>
+<h4>For Create database For Bomber Bot </h4>
 
 Run Command `mysql` your server
 
