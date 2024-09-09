@@ -62,8 +62,9 @@ LANGUAGES = {
         'cancel_bombing': "Cancel Bombing",
         'bombing_cancelled': "Bombing cancelled.",
         'bombing_finished': "Bombing finished",
-        'support': "For support, please contact @z0roday",
+        'support': "Support",
         'change_language': "Change Language",
+        'number': "Number",
     },
     'fa': {
         'welcome': "خوش آمدید، {}!",
@@ -84,8 +85,9 @@ LANGUAGES = {
         'cancel_bombing': "لغو بمباران",
         'bombing_cancelled': "بمباران لغو شد.",
         'bombing_finished': "بمباران به پایان رسید",
-        'support': "برای پشتیبانی، لطفاً با @z0roday تماس بگیرید",
+        'support': "پشتیبانی",
         'change_language': "تغییر زبان",
+        'number': "شماره",
     },
     'ar': {
         'welcome': "مرحبًا، {}!",
@@ -106,8 +108,9 @@ LANGUAGES = {
         'cancel_bombing': "إلغاء القصف",
         'bombing_cancelled': "تم إلغاء القصف.",
         'bombing_finished': "انتهى القصف",
-        'support': "للدعم، يرجى الاتصال بـ @z0roday",
+        'support': "الدعم",
         'change_language': "تغيير اللغة",
+        'number': "رقم",
     }
 }
 
@@ -269,7 +272,7 @@ def create_language_keyboard():
 
 def create_keyboard(user_id, language):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton('SMS'), KeyboardButton(LANGUAGES[language]['support']))
+    keyboard.add(KeyboardButton(LANGUAGES[language]['number']), KeyboardButton(LANGUAGES[language]['support']))
     keyboard.add(KeyboardButton(LANGUAGES[language]['change_language']))
     if is_admin(user_id):
         keyboard.add(KeyboardButton(LANGUAGES[language]['admin']))
@@ -298,6 +301,7 @@ def start(message):
         check_button = InlineKeyboardButton(text=LANGUAGES[language]['confirm_membership'], callback_data='check_membership')
         markup.row(github_button, check_button)
         bot.reply_to(message, LANGUAGES[language]['join_channel'], reply_markup=markup)
+
 @bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['admin'])
 def handle_admin_panel(message):
     language = get_user_language(message.from_user.id)
@@ -335,7 +339,7 @@ def callback_language(call):
     update_user_language(user_id, language)
     bot.answer_callback_query(call.id, "Language updated / زبان به روز شد / تم تحديث اللغة")
 
-@bot.message_handler(func=lambda message: message.text == 'SMS')
+@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['number'])
 def handle_sms(message):
     user_id = message.from_user.id
     language = get_user_language(user_id)
