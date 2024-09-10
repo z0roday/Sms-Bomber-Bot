@@ -185,8 +185,6 @@ def get_user_language(user_id):
 
 def update_user_language(user_id, language):
     execute_db_query('UPDATE users SET language = %s WHERE user_id = %s', (language, user_id))
-    keyboard = create_keyboard(user_id, language)
-    bot.send_message(user_id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
 
 def update_user_usage(user_id):
     execute_db_query('''
@@ -338,6 +336,8 @@ def callback_language(call):
     user_id = call.from_user.id
     update_user_language(user_id, language)
     bot.answer_callback_query(call.id, "Language updated / زبان به روز شد / تم تحديث اللغة")
+    keyboard = create_keyboard(user_id, language)
+    bot.send_message(call.message.chat.id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
 
 @bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['number'])
 def handle_sms(message):
