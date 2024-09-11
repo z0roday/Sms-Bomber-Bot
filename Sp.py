@@ -42,76 +42,27 @@ DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
 
 bombing_events = {}
 
-LANGUAGES = {
-    'en': {
-        'welcome': "Welcome, {}!",
-        'admin': "Admin",
-        'limit_reached': "You have reached your usage limit",
-        'choose_option': "Please choose an option:",
-        'join_channel': "Please join our channel first:",
-        'join_button': "Join Channel",
-        'confirm_membership': "Confirm Membership",
-        'no_permission': "You don't have permission to access the admin panel.",
-        'admin_panel': "Admin panel:",
-        'enter_target': "Please enter your Target Phone Number: ex 09000000000",
-        'invalid_phone': "Invalid input. Please enter a valid 11-digit phone number.",
-        'number_not_found': "Number Not Found!\n /start",
-        'enter_count': "Please enter a number between 1 and 30:",
-        'invalid_count': "Invalid input. Please enter a numeric value between 1 and 30.",
-        'bombing_started': "Starting bombing for phone: {}, count: {}",
-        'cancel_bombing': "Cancel Bombing",
-        'bombing_cancelled': "Bombing cancelled.",
-        'bombing_finished': "Bombing finished",
-        'support': "Support",
-        'change_language': "Change Language",
-        'number': "Number",
-    },
-    'fa': {
-        'welcome': "خوش آمدید، {}!",
-        'admin': "ادمین",
-        'limit_reached': "شما به محدودیت استفاده خود رسیده‌اید",
-        'choose_option': "لطفاً یک گزینه را انتخاب کنید:",
-        'join_channel': "لطفاً ابتدا به کانال ما بپیوندید:",
-        'join_button': "پیوستن به کانال",
-        'confirm_membership': "تأیید عضویت",
-        'no_permission': "شما اجازه دسترسی به پنل ادمین را ندارید.",
-        'admin_panel': "پنل ادمین:",
-        'enter_target': "لطفاً شماره تلفن هدف خود را وارد کنید: مثال 09000000000",
-        'invalid_phone': "ورودی نامعتبر. لطفاً یک شماره تلفن 11 رقمی معتبر وارد کنید.",
-        'number_not_found': "شماره پیدا نشد!\n /start",
-        'enter_count': "لطفاً یک عدد بین 1 و 30 وارد کنید:",
-        'invalid_count': "ورودی نامعتبر. لطفاً یک مقدار عددی بین 1 و 30 وارد کنید.",
-        'bombing_started': "شروع بمباران برای شماره: {}, تعداد: {}",
-        'cancel_bombing': "لغو بمباران",
-        'bombing_cancelled': "بمباران لغو شد.",
-        'bombing_finished': "بمباران به پایان رسید",
-        'support': "پشتیبانی",
-        'change_language': "تغییر زبان",
-        'number': "شماره",
-    },
-    'ar': {
-        'welcome': "مرحبًا، {}!",
-        'admin': "المشرف",
-        'limit_reached': "لقد وصلت إلى حد الاستخدام الخاص بك",
-        'choose_option': "الرجاء اختيار خيار:",
-        'join_channel': "الرجاء الانضمام إلى قناتنا أولاً:",
-        'join_button': "انضم للقناة",
-        'confirm_membership': "تأكيد العضوية",
-        'no_permission': "ليس لديك إذن للوصول إلى لوحة المشرف.",
-        'admin_panel': "لوحة المشرف:",
-        'enter_target': "الرجاء إدخال رقم الهاتف المستهدف: مثال 09000000000",
-        'invalid_phone': "إدخال غير صالح. الرجاء إدخال رقم هاتف صالح مكون من 11 رقمًا.",
-        'number_not_found': "الرقم غير موجود!\n /start",
-        'enter_count': "الرجاء إدخال رقم بين 1 و 30:",
-        'invalid_count': "إدخال غير صالح. الرجاء إدخال قيمة رقمية بين 1 و 30.",
-        'bombing_started': "بدء القصف للهاتف: {}, العدد: {}",
-        'cancel_bombing': "إلغاء القصف",
-        'bombing_cancelled': "تم إلغاء القصف.",
-        'bombing_finished': "انتهى القصف",
-        'support': "الدعم",
-        'change_language': "تغيير اللغة",
-        'number': "رقم",
-    }
+MESSAGES = {
+    'welcome': "Welcome, {}!",
+    'admin': "Admin",
+    'limit_reached': "You have reached your usage limit",
+    'choose_option': "Please choose an option:",
+    'join_channel': "Please join our channel first:",
+    'join_button': "Join Channel",
+    'confirm_membership': "Confirm Membership",
+    'no_permission': "You don't have permission to access the admin panel.",
+    'admin_panel': "Admin panel:",
+    'enter_target': "Please enter your Target Phone Number: ex 09000000000",
+    'invalid_phone': "Invalid input. Please enter a valid 11-digit phone number.",
+    'number_not_found': "Number Not Found!\n /start",
+    'enter_count': "Please enter a number between 1 and 30:",
+    'invalid_count': "Invalid input. Please enter a numeric value between 1 and 30.",
+    'bombing_started': "Starting bombing for phone: {}, count: {}",
+    'cancel_bombing': "Cancel Bombing",
+    'bombing_cancelled': "Bombing cancelled.",
+    'bombing_finished': "Bombing finished",
+    'support': "Support",
+    'number': "Number",
 }
 
 def setup_database():
@@ -129,8 +80,7 @@ def setup_database():
             use_count INT DEFAULT 0,
             is_blocked BOOLEAN DEFAULT FALSE,
             block_until DATETIME,
-            custom_limit INT DEFAULT 2,
-            language VARCHAR(2) DEFAULT 'en'
+            custom_limit INT DEFAULT 2
         )
         ''')
         cursor.execute('''
@@ -172,19 +122,12 @@ def execute_db_query(query, params=None, fetch=False):
         cursor.close()
         conn.close()
 
-def save_user(user_id, username, language='en'):
+def save_user(user_id, username):
     execute_db_query('''
-    INSERT INTO users (user_id, username, last_use, use_count, language)
-    VALUES (%s, %s, NOW(), 0, %s)
-    ON DUPLICATE KEY UPDATE username = %s, language = %s
-    ''', (user_id, username, language, username, language))
-
-def get_user_language(user_id):
-    result = execute_db_query('SELECT language FROM users WHERE user_id = %s', (user_id,), fetch=True)
-    return result[0][0] if result else 'en'
-
-def update_user_language(user_id, language):
-    execute_db_query('UPDATE users SET language = %s WHERE user_id = %s', (language, user_id))
+    INSERT INTO users (user_id, username, last_use, use_count)
+    VALUES (%s, %s, NOW(), 0)
+    ON DUPLICATE KEY UPDATE username = %s
+    ''', (user_id, username, username))
 
 def update_user_usage(user_id):
     execute_db_query('''
@@ -259,58 +202,45 @@ def check_membership(user_id):
         logger.error(f"Failed to check membership for user {user_id}")
         return False
 
-def create_language_keyboard():
-    markup = InlineKeyboardMarkup()
-    markup.row(
-        InlineKeyboardButton("English 🇬🇧", callback_data="lang_en"),
-        InlineKeyboardButton("فارسی 🇮🇷", callback_data="lang_fa"),
-        InlineKeyboardButton("العربية 🇸🇦", callback_data="lang_ar")
-    )
-    return markup
-
-def create_keyboard(user_id, language):
+def create_keyboard(user_id):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton(LANGUAGES[language]['number']), KeyboardButton(LANGUAGES[language]['support']))
-    keyboard.add(KeyboardButton(LANGUAGES[language]['change_language']))
+    keyboard.add(KeyboardButton(MESSAGES['number']), KeyboardButton(MESSAGES['support']))
     if is_admin(user_id):
-        keyboard.add(KeyboardButton(LANGUAGES[language]['admin']))
+        keyboard.add(KeyboardButton(MESSAGES['admin']))
     return keyboard
 
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
-    language = get_user_language(user_id)
     
     if check_membership(user_id):
-        welcome_message = LANGUAGES[language]['welcome'].format(message.from_user.first_name)
+        welcome_message = MESSAGES['welcome'].format(message.from_user.first_name)
         if is_admin(user_id):
-            welcome_message += f" ({LANGUAGES[language]['admin']})"
+            welcome_message += f" ({MESSAGES['admin']})"
         if not check_user_limit(user_id):
-            welcome_message += f"\n{LANGUAGES[language]['limit_reached']}"
-        save_user(user_id, message.from_user.username, language)
-        keyboard = create_keyboard(user_id, language)
+            welcome_message += f"\n{MESSAGES['limit_reached']}"
+        save_user(user_id, message.from_user.username)
+        keyboard = create_keyboard(user_id)
         bot.send_message(message.chat.id, welcome_message)
-        bot.send_message(message.chat.id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
+        bot.send_message(message.chat.id, MESSAGES['choose_option'], reply_markup=keyboard)
     else:
         markup = InlineKeyboardMarkup()
-        join_button = InlineKeyboardButton(text=LANGUAGES[language]['join_button'], url=f'https://t.me/{MAIN_CHANNEL_ID[1:]}')
+        join_button = InlineKeyboardButton(text=MESSAGES['join_button'], url=f'https://t.me/{MAIN_CHANNEL_ID[1:]}')
         markup.add(join_button)
         github_button = InlineKeyboardButton(text='GitHub', url='https://github.com/z0roday')
-        check_button = InlineKeyboardButton(text=LANGUAGES[language]['confirm_membership'], callback_data='check_membership')
+        check_button = InlineKeyboardButton(text=MESSAGES['confirm_membership'], callback_data='check_membership')
         markup.row(github_button, check_button)
-        bot.reply_to(message, LANGUAGES[language]['join_channel'], reply_markup=markup)
+        bot.reply_to(message, MESSAGES['join_channel'], reply_markup=markup)
 
-@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['admin'])
+@bot.message_handler(func=lambda message: message.text == MESSAGES['admin'])
 def handle_admin_panel(message):
-    language = get_user_language(message.from_user.id)
     if is_admin(message.from_user.id):
         show_admin_panel(message)
     else:
-        bot.reply_to(message, LANGUAGES[language]['no_permission'])
+        bot.reply_to(message, MESSAGES['no_permission'])
 
 @bot.message_handler(commands=['admin'])
 def show_admin_panel(message):
-    language = get_user_language(message.from_user.id)
     if is_admin(message.from_user.id):
         markup = InlineKeyboardMarkup()
         markup.row(InlineKeyboardButton("Admin Info", callback_data="admin_info"),
@@ -321,46 +251,29 @@ def show_admin_panel(message):
                    InlineKeyboardButton("Set User Limit", callback_data="set_user_limit"))
         markup.row(InlineKeyboardButton("Set Global Limit", callback_data="set_global_limit"))
         markup.row(InlineKeyboardButton("Cancel", callback_data="cancel_admin"))
-        bot.send_message(message.chat.id, LANGUAGES[language]['admin_panel'], reply_markup=markup)
+        bot.send_message(message.chat.id, MESSAGES['admin_panel'], reply_markup=markup)
     else:
-        bot.reply_to(message, LANGUAGES[language]['no_permission'])
+        bot.reply_to(message, MESSAGES['no_permission'])
 
-@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['change_language'])
-def change_language(message):
-    markup = create_language_keyboard()
-    bot.reply_to(message, "Please select a language / لطفا یک زبان انتخاب کنید / الرجاء اختيار لغة", reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith('lang_'))
-def callback_language(call):
-    language = call.data.split('_')[1]
-    user_id = call.from_user.id
-    update_user_language(user_id, language)
-    bot.answer_callback_query(call.id, "Language updated / زبان به روز شد / تم تحديث اللغة")
-    keyboard = create_keyboard(user_id, language)
-    bot.send_message(call.message.chat.id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
-
-@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['number'])
+@bot.message_handler(func=lambda message: message.text == MESSAGES['number'])
 def handle_sms(message):
     user_id = message.from_user.id
-    language = get_user_language(user_id)
     
     if not check_membership(user_id):
         start(message)
         return
     if not check_user_limit(user_id):
-        bot.reply_to(message, LANGUAGES[language]['limit_reached'])
+        bot.reply_to(message, MESSAGES['limit_reached'])
         return
-    bot.reply_to(message, LANGUAGES[language]['enter_target'])
+    bot.reply_to(message, MESSAGES['enter_target'])
     bot.register_next_step_handler(message, get_phone)
 
-@bot.message_handler(func=lambda message: message.text == LANGUAGES[get_user_language(message.from_user.id)]['support'])
+@bot.message_handler(func=lambda message: message.text == MESSAGES['support'])
 def handle_support(message):
-    language = get_user_language(message.from_user.id)
-    bot.reply_to(message, LANGUAGES[language]['support'])
+    bot.reply_to(message, MESSAGES['support'])
 
 @bot.callback_query_handler(func=lambda call: call.data in ["admin_info", "broadcast", "add_admin", "ban_user", "unban_user", "set_user_limit", "set_global_limit", "cancel_admin", "check_membership"])
 def callback_query(call):
-    language = get_user_language(call.from_user.id)
     if call.data in ["admin_info", "broadcast", "add_admin", "ban_user", "unban_user", "set_user_limit", "set_global_limit", "cancel_admin"]:
         if is_admin(call.from_user.id):
             if call.data == "admin_info":
@@ -389,62 +302,60 @@ def callback_query(call):
                                       chat_id=call.message.chat.id, 
                                       message_id=call.message.message_id)
         else:
-            bot.answer_callback_query(call.id, LANGUAGES[language]['no_permission'])
+            bot.answer_callback_query(call.id, MESSAGES['no_permission'])
     elif call.data == 'check_membership':
         if check_membership(call.from_user.id):
-            bot.answer_callback_query(call.id, LANGUAGES[language]['welcome'])
-            welcome_message = LANGUAGES[language]['welcome'].format(call.from_user.first_name)
+            bot.answer_callback_query(call.id, MESSAGES['welcome'])
+            welcome_message = MESSAGES['welcome'].format(call.from_user.first_name)
             if is_admin(call.from_user.id):
-                welcome_message += f" ({LANGUAGES[language]['admin']})"
-            keyboard = create_keyboard(call.from_user.id, language)
+                welcome_message += f" ({MESSAGES['admin']})"
+            keyboard = create_keyboard(call.from_user.id)
             bot.send_message(call.message.chat.id, welcome_message)
-            bot.send_message(call.message.chat.id, LANGUAGES[language]['choose_option'], reply_markup=keyboard)
+            bot.send_message(call.message.chat.id, MESSAGES['choose_option'], reply_markup=keyboard)
         else:
-            bot.answer_callback_query(call.id, LANGUAGES[language]['join_channel'])
+            bot.answer_callback_query(call.id, MESSAGES['join_channel'])
 
 def get_phone(message):
-    language = get_user_language(message.from_user.id)
     phone = message.text
     if not phone.isdigit() or len(phone) != 11:
-        bot.reply_to(message, LANGUAGES[language]['invalid_phone'])
+        bot.reply_to(message, MESSAGES['invalid_phone'])
         bot.register_next_step_handler(message, get_phone)
         return
     
     if phone in ("09938282310", "09932539709"):
-        bot.send_message(message.chat.id, LANGUAGES[language]['number_not_found'])
+        bot.send_message(message.chat.id, MESSAGES['number_not_found'])
     else:
-        bot.reply_to(message, LANGUAGES[language]['enter_count'])
+        bot.reply_to(message, MESSAGES['enter_count'])
         bot.register_next_step_handler(message, get_count, phone)
 
 def get_count(message, phone):
-    language = get_user_language(message.from_user.id)
     if not message.text.isdigit():
-        bot.reply_to(message, LANGUAGES[language]['invalid_count'])
+        bot.reply_to(message, MESSAGES['invalid_count'])
         bot.register_next_step_handler(message, get_count, phone)
         return
    
     count = int(message.text)
     if 1 <= count <= 30:
-        bot.reply_to(message, LANGUAGES[language]['bombing_started'].format(phone, count))
+        bot.reply_to(message, MESSAGES['bombing_started'].format(phone, count))
         update_user_usage(message.from_user.id)
        
         bombing_events[message.chat.id] = Event()
        
         markup = InlineKeyboardMarkup()
-        cancel_button = InlineKeyboardButton(LANGUAGES[language]['cancel_bombing'], callback_data="cancel_bombing")
+        cancel_button = InlineKeyboardButton(MESSAGES['cancel_bombing'], callback_data="cancel_bombing")
         markup.add(cancel_button)
-        bot.send_message(message.chat.id, LANGUAGES[language]['bombing_started'].format(phone, count), reply_markup=markup)
-        Thread(target=bombing, args=(message.chat.id, phone, count, bombing_events[message.chat.id], language)).start()
+        bot.send_message(message.chat.id, MESSAGES['bombing_started'].format(phone, count), reply_markup=markup)
+        Thread(target=bombing, args=(message.chat.id, phone, count, bombing_events[message.chat.id])).start()
     else:
-        bot.reply_to(message, LANGUAGES[language]['invalid_count'])
+        bot.reply_to(message, MESSAGES['invalid_count'])
         bot.register_next_step_handler(message, get_count, phone)
 
-def bombing(chat_id, phone, count, stop_event, language):
+def bombing(chat_id, phone, count, stop_event):
     x = 0
     phone = f"+98{phone[1:]}"
     for j in range(count):
         if stop_event.is_set():
-            bot.send_message(chat_id, LANGUAGES[language]['bombing_cancelled'])
+            bot.send_message(chat_id, MESSAGES['bombing_cancelled'])
             return
         for k in range(len(SMS_SERVICES)):
             try:
@@ -458,19 +369,18 @@ def bombing(chat_id, phone, count, stop_event, language):
             except Exception as e:
                 logger.error(f"Error in Call service {CALL_SERVICES[x]} for phone {phone}: {e}")
         sleep(0.2)
-    bot.send_message(chat_id, LANGUAGES[language]['bombing_finished'])
+    bot.send_message(chat_id, MESSAGES['bombing_finished'])
     del bombing_events[chat_id]
 
 @bot.callback_query_handler(func=lambda call: call.data == "cancel_bombing")
 def cancel_bombing_callback(call):
-    language = get_user_language(call.from_user.id)
     chat_id = call.message.chat.id
     if chat_id in bombing_events:
         bombing_events[chat_id].set()
-        bot.answer_callback_query(call.id, LANGUAGES[language]['bombing_cancelled'])
-        bot.edit_message_text(LANGUAGES[language]['bombing_cancelled'], chat_id=chat_id, message_id=call.message.message_id)
+        bot.answer_callback_query(call.id, MESSAGES['bombing_cancelled'])
+        bot.edit_message_text(MESSAGES['bombing_cancelled'], chat_id=chat_id, message_id=call.message.message_id)
     else:
-        bot.answer_callback_query(call.id, LANGUAGES[language]['bombing_finished'])
+        bot.answer_callback_query(call.id, MESSAGES['bombing_finished'])
 
 if __name__ == "__main__":
     try:
