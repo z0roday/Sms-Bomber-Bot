@@ -42,28 +42,6 @@ DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
 
 bombing_events = {}
 
-MESSAGES = {
-    'welcome': "Welcome, {}!",
-    'admin': "Admin",
-    'limit_reached': "You have reached your usage limit",
-    'choose_option': "Please choose an option:",
-    'join_channel': "Please join our channel first:",
-    'join_button': "Join Channel",
-    'confirm_membership': "Confirm Membership",
-    'no_permission': "You don't have permission to access the admin panel.",
-    'admin_panel': "Admin panel:",
-    'enter_target': "Please enter your Target Phone Number: ex 09000000000",
-    'invalid_phone': "Invalid input. Please enter a valid 11-digit phone number.",
-    'number_not_found': "Number Not Found!\n /start",
-    'enter_count': "Please enter a number between 1 and 30:",
-    'invalid_count': "Invalid input. Please enter a numeric value between 1 and 30.",
-    'bombing_started': "Starting bombing for phone: {}, count: {}",
-    'cancel_bombing': "Cancel Bombing",
-    'bombing_cancelled': "Bombing cancelled.",
-    'bombing_finished': "Bombing finished",
-    'support': "Support",
-    'number': "Number",
-}
 
 def setup_database():
     try:
@@ -204,9 +182,9 @@ def check_membership(user_id):
 
 def create_keyboard(user_id):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.add(KeyboardButton(MESSAGES['number']), KeyboardButton(MESSAGES['support']))
+    keyboard.add(KeyboardButton("Number"), KeyboardButton("پشتیبانی"))
     if is_admin(user_id):
-        keyboard.add(KeyboardButton(MESSAGES['admin']))
+        keyboard.add(KeyboardButton("Admin"))
     return keyboard
 
 @bot.message_handler(commands=['start'])
@@ -214,30 +192,30 @@ def start(message):
     user_id = message.from_user.id
     
     if check_membership(user_id):
-        welcome_message = MESSAGES['welcome'].format(message.from_user.first_name)
+        welcome_message = f"Welcome, {message.from_user.first_name}!"
         if is_admin(user_id):
-            welcome_message += f" ({MESSAGES['admin']})"
+            welcome_message += " (Admin)"
         if not check_user_limit(user_id):
-            welcome_message += f"\n{MESSAGES['limit_reached']}"
+            welcome_message += "\nYou have reached your usage limit"
         save_user(user_id, message.from_user.username)
         keyboard = create_keyboard(user_id)
         bot.send_message(message.chat.id, welcome_message)
-        bot.send_message(message.chat.id, MESSAGES['choose_option'], reply_markup=keyboard)
+        bot.send_message(message.chat.id, "Please choose an option:", reply_markup=keyboard)
     else:
         markup = InlineKeyboardMarkup()
-        join_button = InlineKeyboardButton(text=MESSAGES['join_button'], url=f'https://t.me/{MAIN_CHANNEL_ID[1:]}')
+        join_button = InlineKeyboardButton(text="Join Channel", url=f'https://t.me/{MAIN_CHANNEL_ID[1:]}')
         markup.add(join_button)
         github_button = InlineKeyboardButton(text='GitHub', url='https://github.com/z0roday')
-        check_button = InlineKeyboardButton(text=MESSAGES['confirm_membership'], callback_data='check_membership')
+        check_button = InlineKeyboardButton(text="Confirm Membership", callback_data='check_membership')
         markup.row(github_button, check_button)
-        bot.reply_to(message, MESSAGES['join_channel'], reply_markup=markup)
+        bot.reply_to(message, "Please join our channel first:", reply_markup=markup)
 
-@bot.message_handler(func=lambda message: message.text == MESSAGES['admin'])
+@bot.message_handler(func=lambda message: message.text == "Admin")
 def handle_admin_panel(message):
     if is_admin(message.from_user.id):
         show_admin_panel(message)
     else:
-        bot.reply_to(message, MESSAGES['no_permission'])
+        bot.reply_to(message, "You don't have permission to access the admin panel.")
 
 @bot.message_handler(commands=['admin'])
 def show_admin_panel(message):
@@ -251,11 +229,11 @@ def show_admin_panel(message):
                    InlineKeyboardButton("Set User Limit", callback_data="set_user_limit"))
         markup.row(InlineKeyboardButton("Set Global Limit", callback_data="set_global_limit"))
         markup.row(InlineKeyboardButton("Cancel", callback_data="cancel_admin"))
-        bot.send_message(message.chat.id, MESSAGES['admin_panel'], reply_markup=markup)
+        bot.send_message(message.chat.id, "Admin panel:", reply_markup=markup)
     else:
-        bot.reply_to(message, MESSAGES['no_permission'])
+        bot.reply_to(message, "You don't have permission to access the admin panel.")
 
-@bot.message_handler(func=lambda message: message.text == MESSAGES['number'])
+@bot.message_handler(func=lambda message: message.text == "Number")
 def handle_sms(message):
     user_id = message.from_user.id
     
@@ -263,14 +241,23 @@ def handle_sms(message):
         start(message)
         return
     if not check_user_limit(user_id):
-        bot.reply_to(message, MESSAGES['limit_reached'])
+        bot.reply_to(message, "You have reached your usage limit")
         return
-    bot.reply_to(message, MESSAGES['enter_target'])
+    bot.reply_to(message, "Please enter your Target Phone Number: ex 09000000000")
     bot.register_next_step_handler(message, get_phone)
 
-@bot.message_handler(func=lambda message: message.text == MESSAGES['support'])
+
+@bot.message_handler(func=lambda message: message.text == "پشتیبانی")
 def handle_support(message):
-    bot.reply_to(message, MESSAGES['support'])
+    try:
+        user_id = message.from_user.id
+        support_text = f"برای پشتیبانی به ایدی پیام بدید @z0roday"
+        admin_id = os.getenv('ADMIN_ID')  
+        if admin_id:
+            bot.send_message(chat_id=admin_id, text=support_text)
+    except Exception as e:
+        logger.error(f"Error in handle_support: {e}")
+        bot.reply_to(message, "An error occurred. Please try again later.")
 
 @bot.callback_query_handler(func=lambda call: call.data in ["admin_info", "broadcast", "add_admin", "ban_user", "unban_user", "set_user_limit", "set_global_limit", "cancel_admin", "check_membership"])
 def callback_query(call):
@@ -302,52 +289,55 @@ def callback_query(call):
                                       chat_id=call.message.chat.id, 
                                       message_id=call.message.message_id)
         else:
-            bot.answer_callback_query(call.id, MESSAGES['no_permission'])
+            bot.answer_callback_query(call.id, "You don't have permission to access the admin panel.")
     elif call.data == 'check_membership':
         if check_membership(call.from_user.id):
-            bot.answer_callback_query(call.id, MESSAGES['welcome'])
-            welcome_message = MESSAGES['welcome'].format(call.from_user.first_name)
+            bot.answer_callback_query(call.id, "Welcome!")
+            welcome_message = f"Welcome, {call.from_user.first_name}!"
             if is_admin(call.from_user.id):
-                welcome_message += f" ({MESSAGES['admin']})"
+                welcome_message += " (Admin)"
             keyboard = create_keyboard(call.from_user.id)
             bot.send_message(call.message.chat.id, welcome_message)
-            bot.send_message(call.message.chat.id, MESSAGES['choose_option'], reply_markup=keyboard)
+            bot.send_message(call.message.chat.id, "Please choose an option:", reply_markup=keyboard)
         else:
-            bot.answer_callback_query(call.id, MESSAGES['join_channel'])
+            bot.answer_callback_query(call.id, "Please join our channel first.")
+
+
 
 def get_phone(message):
     phone = message.text
     if not phone.isdigit() or len(phone) != 11:
-        bot.reply_to(message, MESSAGES['invalid_phone'])
+        bot.reply_to(message, "Invalid phone number. Please enter a valid 11-digit number.")
         bot.register_next_step_handler(message, get_phone)
         return
     
-    if phone in ("09938282310", "09932539709"):
-        bot.send_message(message.chat.id, MESSAGES['number_not_found'])
+    if phone in ("09938282310"):
+        bot.send_message(message.chat.id, "This number is not available for bombing.")
     else:
-        bot.reply_to(message, MESSAGES['enter_count'])
+        bot.reply_to(message, "Please enter the number of bombing attempts (1-30):")
         bot.register_next_step_handler(message, get_count, phone)
+
 
 def get_count(message, phone):
     if not message.text.isdigit():
-        bot.reply_to(message, MESSAGES['invalid_count'])
+        bot.reply_to(message, "Please enter a number between 1 and 30.")
         bot.register_next_step_handler(message, get_count, phone)
         return
    
     count = int(message.text)
     if 1 <= count <= 30:
-        bot.reply_to(message, MESSAGES['bombing_started'].format(phone, count))
+        bot.reply_to(message, f"Bombing started for {phone} with {count} attempts.")
         update_user_usage(message.from_user.id)
        
         bombing_events[message.chat.id] = Event()
        
         markup = InlineKeyboardMarkup()
-        cancel_button = InlineKeyboardButton(MESSAGES['cancel_bombing'], callback_data="cancel_bombing")
+        cancel_button = InlineKeyboardButton("Cancel Bombing", callback_data="cancel_bombing")
         markup.add(cancel_button)
-        bot.send_message(message.chat.id, MESSAGES['bombing_started'].format(phone, count), reply_markup=markup)
+        bot.send_message(message.chat.id, f"Bombing started for {phone} with {count} attempts.", reply_markup=markup)
         Thread(target=bombing, args=(message.chat.id, phone, count, bombing_events[message.chat.id])).start()
     else:
-        bot.reply_to(message, MESSAGES['invalid_count'])
+        bot.reply_to(message, "Invalid count. Please enter a number between 1 and 30.")
         bot.register_next_step_handler(message, get_count, phone)
 
 def bombing(chat_id, phone, count, stop_event):
@@ -355,7 +345,7 @@ def bombing(chat_id, phone, count, stop_event):
     phone = f"+98{phone[1:]}"
     for j in range(count):
         if stop_event.is_set():
-            bot.send_message(chat_id, MESSAGES['bombing_cancelled'])
+            bot.send_message(chat_id, "Bombing cancelled.")
             return
         for k in range(len(SMS_SERVICES)):
             try:
@@ -368,8 +358,7 @@ def bombing(chat_id, phone, count, stop_event):
                 x = (x + 1) % len(CALL_SERVICES)
             except Exception as e:
                 logger.error(f"Error in Call service {CALL_SERVICES[x]} for phone {phone}: {e}")
-        sleep(0.2)
-    bot.send_message(chat_id, MESSAGES['bombing_finished'])
+    bot.send_message(chat_id, "Bombing finished.")
     del bombing_events[chat_id]
 
 @bot.callback_query_handler(func=lambda call: call.data == "cancel_bombing")
@@ -377,10 +366,108 @@ def cancel_bombing_callback(call):
     chat_id = call.message.chat.id
     if chat_id in bombing_events:
         bombing_events[chat_id].set()
-        bot.answer_callback_query(call.id, MESSAGES['bombing_cancelled'])
-        bot.edit_message_text(MESSAGES['bombing_cancelled'], chat_id=chat_id, message_id=call.message.message_id)
+        bot.answer_callback_query(call.id, "Bombing cancelled.")
+        bot.edit_message_text("Bombing cancelled.", chat_id=chat_id, message_id=call.message.message_id)
     else:
-        bot.answer_callback_query(call.id, MESSAGES['bombing_finished'])
+        bot.answer_callback_query(call.id, "Bombing already finished.")
+
+def admin_info_command(message):
+    total_users = execute_db_query('SELECT COUNT(*) FROM users', fetch=True)[0][0]
+    active_users = execute_db_query('SELECT COUNT(*) FROM users WHERE is_blocked = FALSE', fetch=True)[0][0]
+    blocked_users = execute_db_query('SELECT COUNT(*) FROM users WHERE is_blocked = TRUE', fetch=True)[0][0]
+    
+    admin_info = f"Total Users: {total_users}\n"
+    admin_info += f"Active Users: {active_users}\n"
+    admin_info += f"Blocked Users: {blocked_users}"
+    
+    bot.reply_to(message, admin_info)
+
+def process_broadcast(message):
+    broadcast_message = message.text
+    users = execute_db_query('SELECT user_id FROM users WHERE is_blocked = FALSE', fetch=True)
+    success_count = 0
+    fail_count = 0
+    for user in users:
+        try:
+            bot.send_message(user[0], broadcast_message)
+            success_count += 1
+        except Exception as e:
+            logger.error(f"Failed to send message to user {user[0]}: {e}")
+            fail_count += 1
+        sleep(0.1) 
+    bot.reply_to(message, f"Broadcast message sent. Success: {success_count}, Failed: {fail_count}")
+
+
+def process_new_admin(message):
+    if message.text.isdigit():
+        new_admin_id = int(message.text)
+        if is_admin(new_admin_id):
+            bot.reply_to(message, f"User with ID {new_admin_id} is already an admin.")
+        else:
+            add_admin(new_admin_id)
+            bot.reply_to(message, f"Admin with ID {new_admin_id} has been added.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric ID.")
+
+def process_ban_duration(message, user_id):
+    if message.text.isdigit():
+        duration = int(message.text)
+        ban_user(user_id, duration)
+        bot.reply_to(message, f"User with ID {user_id} has been banned for {duration} minutes.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a number for the ban duration in minutes.")
+        
+def process_ban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        result = execute_db_query('SELECT user_id FROM users WHERE user_id = %s', (user_id,), fetch=True)
+        if result:
+            bot.reply_to(message, f"User found. User ID: {user_id}")
+            bot.reply_to(message, "Please enter the ban duration in minutes:")
+            bot.register_next_step_handler(message, process_ban_duration, user_id)
+        else:
+            bot.reply_to(message, "User not found. Please check the user ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric user ID.")
+
+def process_unban_user_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        result = execute_db_query('SELECT user_id, is_blocked FROM users WHERE user_id = %s', (user_id,), fetch=True)
+        if result:
+            if result[0][1]:  # Check if the user is blocked
+                unban_user(user_id)
+                bot.reply_to(message, f"User with ID {user_id} has been unbanned.")
+            else:
+                bot.reply_to(message, f"User with ID {user_id} is not currently banned.")
+        else:
+            bot.reply_to(message, "User not found. Please check the user ID and try again.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric user ID.")
+
+def process_set_user_limit(message, user_id):
+    if message.text.isdigit():
+        limit = int(message.text)
+        set_custom_limit(user_id, limit)
+        bot.reply_to(message, f"Custom limit for user {user_id} has been set to {limit}.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric limit.")
+
+def process_set_user_limit_id(message):
+    if message.text.isdigit():
+        user_id = int(message.text)
+        bot.reply_to(message, f"Enter the custom limit for user {user_id}:")
+        bot.register_next_step_handler(message, process_set_user_limit, user_id)
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric user ID.")
+
+def process_set_global_limit(message):
+    if message.text.isdigit():
+        limit = int(message.text)
+        execute_db_query('UPDATE users SET custom_limit = %s', (limit,))
+        bot.reply_to(message, f"Global limit has been set to {limit} for all users.")
+    else:
+        bot.reply_to(message, "Invalid input. Please enter a numeric limit.")
 
 if __name__ == "__main__":
     try:
@@ -397,7 +484,6 @@ if __name__ == "__main__":
                 bot.polling(none_stop=True, interval=1, timeout=20)
             except Exception as e:
                 logger.error(f"Bot polling error: {e}")
-                sleep(5)
     except Exception as e:
         logger.critical(f"Critical error: {e}")
         raise
