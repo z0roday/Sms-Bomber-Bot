@@ -1,65 +1,85 @@
-# Version
+# SMS Bomber Telegram Bot
 
-## V 2.0
+This project implements a Telegram bot that provides SMS bombing functionality. It's designed to send multiple SMS messages to a specified phone number for testing purposes. Please use responsibly and only on numbers you own or have explicit permission to test.
 
-<hr>
+## Features
 
-## How Do i Put My Bot Token in the Source 
+- SMS and call bombing functionality
+- User management system
+- Admin panel with various controls
+- Database integration for user data storage
+- Rate limiting and user blocking capabilities
 
-<hr>
- 
+## Prerequisites
 
-## Follow The Instructions
+- Python 3.7+
+- MySQL database
+- Telegram Bot Token
 
-1. create .env file inside the same folder `open with editor file`
+## Installation
 
-2. And put it in the bot token file like this `BOT_TOKEN=YOUR_TOKEN_BOT`
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/sms-bomber-bot.git
+   cd sms-bomber-bot
+   ```
 
-3. Run This command `export BOT_TOKEN=YOUR_TOEKN_BOT`
+2. Install the required dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-4. And this Command `echo $BOT_TOKEN`
+3. Set up your MySQL database and note down the credentials.
 
-<hr>
+4. Create a `.env` file in the project root and add the following environment variables:
+   ```
+   BOT_TOKEN=your_telegram_bot_token
+   MAIN_CHANNEL_ID=your_main_channel_id
+   DB_NAME=your_database_name
+   DB_HOST=your_database_host
+   DB_USER=your_database_user
+   DB_PASS=your_database_password
+   ADMIN_ID=your_admin_user_id
+   ```
 
-# Add Admin Id 
+## Usage
 
-1. open .env
+Run the bot using the following command:
 
-2. add this `ADMIN_ID=ID`
+```
+python main.py
+```
 
-3. `export ADMIN_ID=ID`
+The bot will start and listen for commands on Telegram.
 
-   
-If You Execute This Command `echo $BOT_TOKEN`, `echo $ADMIN_ID` And Your Bot Token Is Not Displayed in The CLI environment You Will Get An Error To Aviod Getting The Error Do All The Things I Said 
+## Commands
 
-## Database 
+- `/start` - Start the bot and check user membership
+- `/admin` - Access the admin panel (for admin users only)
 
-Open Sp.py and change database 
+## Admin Panel Features
 
-````
-DB_NAME = os.getenv('DB_NAME', 'Database_Name')
-DB_HOST = os.getenv('DB_HOST', 'Database_Host')
-DB_USER = os.getenv('DB_USER', 'Database_Username')
-DB_PASS = os.getenv('DB_PASS', 'Database_Password')
-````
-<h4>For Create database For Bomber Bot </h4>
+- View admin information
+- Broadcast messages to all users
+- Add new admin users
+- Ban/unban users
+- Set custom usage limits for users
+- Set global usage limit
 
-Run Command `mysql` your server
+## Security Notes
 
-````
-Create database ExoBot;
-create user 'Exo'@'localhost' identified with mysql_native_password by 'Favorite password';
-grant all on ExoBot.* to 'z0roday'@'localhost';
-````
+- Ensure that your `.env` file is not committed to the repository
+- Regularly update your bot token and database credentials
+- Monitor bot usage to prevent abuse
 
-Your DataBase Created `Where i Wrote change Exo and put your favorite thinds `
+## Contributing
 
-````
-cd Exo-Sms-Bomber-Bot-Backup
-<a src="hhtps://t.me/z0roday">
-pip -r install requriments.txt
-python Sp.py 
-````
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-<hr>
+## License
 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Disclaimer
+
+This tool is for educational purposes only. Do not use it for illegal activities. The authors are not responsible for any misuse or damage caused by this program.
