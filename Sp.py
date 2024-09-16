@@ -30,7 +30,7 @@ try:
 except Exception as e:
     logger.error(f"Failed to initialize bot: {e}")
     raise
-
+# github.com/z0orday
 SMS_SERVICES = [i[0] for i in getmembers(sms, isfunction)]
 CALL_SERVICES = [i[0] for i in getmembers(call, isfunction)]
 MAIN_CHANNEL_ID = os.getenv('MAIN_CHANNEL_ID')
@@ -41,8 +41,8 @@ DB_USER = os.getenv('DB_USER', 'z0roday')
 DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
 
 bombing_events = {}
-
-
+# github.com/z0orday
+admin_username = "yourusername"
 def setup_database():
     try:
         conn = mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASS)
@@ -151,6 +151,8 @@ def ban_user(user_id, duration_minutes):
     WHERE user_id = %s
     ''', (block_until, user_id))
 
+# github.com/z0orday
+
 def unban_user(user_id):
     execute_db_query('''
     UPDATE users 
@@ -251,7 +253,7 @@ def handle_sms(message):
 def handle_support(message):
     try:
         user_id = message.from_user.id
-        support_text = f"برای پشتیبانی به ایدی پیام بدید @z0roday"
+        support_text = f"برای پشتیبانی به ایدی پیام بدید {admin_username}"
         bot.reply_to(message, support_text)
         
         admin_id = os.getenv('ADMIN_ID')  
@@ -305,7 +307,7 @@ def callback_query(call):
         else:
             bot.answer_callback_query(call.id, "Please join our channel first.")
 
-
+# github.com/z0orday
 
 def get_phone(message):
     phone = message.text
@@ -397,7 +399,7 @@ def process_broadcast(message):
         except Exception as e:
             logger.error(f"Failed to send message to user {user[0]}: {e}")
             fail_count += 1
-        sleep(0.1)  # Add a small delay to avoid hitting rate limits
+        sleep(0.1)  
     bot.reply_to(message, f"Broadcast message sent. Success: {success_count}, Failed: {fail_count}")
 
 
@@ -438,7 +440,7 @@ def process_unban_user_id(message):
         user_id = int(message.text)
         result = execute_db_query('SELECT user_id, is_blocked FROM users WHERE user_id = %s', (user_id,), fetch=True)
         if result:
-            if result[0][1]:  # Check if the user is blocked
+            if result[0][1]:  
                 unban_user(user_id)
                 bot.reply_to(message, f"User with ID {user_id} has been unbanned.")
             else:
