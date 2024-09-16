@@ -252,9 +252,12 @@ def handle_support(message):
     try:
         user_id = message.from_user.id
         support_text = f"برای پشتیبانی به ایدی پیام بدید @z0roday"
+        bot.reply_to(message, support_text)
+        
         admin_id = os.getenv('ADMIN_ID')  
         if admin_id:
-            bot.send_message(chat_id=admin_id, text=support_text)
+            admin_notification = f"کاربر با شناسه {user_id} درخواست پشتیبانی کرده است."
+            bot.send_message(chat_id=admin_id, text=admin_notification)
     except Exception as e:
         logger.error(f"Error in handle_support: {e}")
         bot.reply_to(message, "An error occurred. Please try again later.")
@@ -394,7 +397,7 @@ def process_broadcast(message):
         except Exception as e:
             logger.error(f"Failed to send message to user {user[0]}: {e}")
             fail_count += 1
-        sleep(0.1) 
+        sleep(0.1)  # Add a small delay to avoid hitting rate limits
     bot.reply_to(message, f"Broadcast message sent. Success: {success_count}, Failed: {fail_count}")
 
 
@@ -487,3 +490,4 @@ if __name__ == "__main__":
     except Exception as e:
         logger.critical(f"Critical error: {e}")
         raise
+
