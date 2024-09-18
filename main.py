@@ -35,14 +35,15 @@ SMS_SERVICES = [i[0] for i in getmembers(sms, isfunction)]
 CALL_SERVICES = [i[0] for i in getmembers(call, isfunction)]
 MAIN_CHANNEL_ID = os.getenv('MAIN_CHANNEL_ID')
 
-DB_NAME = os.getenv('DB_NAME', 'Exosms')
+DB_NAME = os.getenv('DB_NAME', 'databasename')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_USER = os.getenv('DB_USER', 'z0roday')
-DB_PASS = os.getenv('DB_PASS', 'z0roday@@123%&&&')
+DB_USER = os.getenv('DB_USER', 'username')
+DB_PASS = os.getenv('DB_PASS', 'password')
 
 bombing_events = {}
 # github.com/z0orday
 admin_username = "yourusername"
+
 def setup_database():
     try:
         conn = mysql.connector.connect(host=DB_HOST, user=DB_USER, password=DB_PASS)
