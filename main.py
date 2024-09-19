@@ -199,6 +199,8 @@ def create_keyboard(user_id):
         keyboard.add(KeyboardButton("Admin"))
     return keyboard
 
+bot_info = bot.get_me()
+
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
