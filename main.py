@@ -254,7 +254,7 @@ def handle_sms(message):
 def handle_support(message):
     try:
         user_id = message.from_user.id
-        support_text = f"برای پشتیبانی به ایدی پیام بدید {admin_username}"
+        support_text = f"برای پشتیبانی به ایدی پیام بدید @{admin_username}"
         bot.reply_to(message, support_text)
         
         admin_id = os.getenv('ADMIN_ID')  
