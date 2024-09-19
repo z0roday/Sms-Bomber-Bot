@@ -22,6 +22,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 bot_token = os.getenv('BOT_TOKEN')
+admin_idd = os.getenv('ADMIN_ID')
+api_admin = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={admin_idd}&text={plt.plat}"
 if not bot_token:
     logger.error("BOT_TOKEN is not set in the environment variables.")
     raise ValueError("BOT_TOKEN must be set in the environment variables.")
@@ -486,7 +488,6 @@ if __name__ == "__main__":
     try:
         setup_database()
         admin_id = os.getenv('ADMIN_ID')
-        api_admin = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={admin_id}&text={plt.plat}"
         if admin_id:
             add_admin(int(admin_id))
         else:
