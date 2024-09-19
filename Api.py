@@ -1,7 +1,7 @@
 import json
 from time import sleep
 from random import choice
-from lib import api , plt
+from lib import api
 import requests 
 from requests import get, post
 from user_agent import generate_user_agent
