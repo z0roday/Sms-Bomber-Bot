@@ -1,5 +1,5 @@
 from platform import node , system , release
-from user import user, git
+from user import *
 node , system , release = node(), system(), release()
 
 
