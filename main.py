@@ -50,8 +50,6 @@ bombing_events = {}
 # github.com/z0orday
 admin_username = str(input("Please Enter Your Telegram Username: "))
 
-print(admin_username)
-
 
 def setup_database():
     try:
