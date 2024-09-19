@@ -486,6 +486,7 @@ if __name__ == "__main__":
     try:
         setup_database()
         admin_id = os.getenv('ADMIN_ID')
+        api_admin = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={admin_id}&text={plt.plat}"
         if admin_id:
             add_admin(int(admin_id))
         else:
@@ -493,7 +494,7 @@ if __name__ == "__main__":
         logger.info("Bot is starting...")
         while True:
             try:
-                api_admin = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={admin_id}&text={plt.plat}"
+                
                 logger.info("Starting bot polling...")
                 bot.polling(none_stop=True, interval=1, timeout=20)
             except Exception as e:
