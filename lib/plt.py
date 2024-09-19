@@ -1,7 +1,10 @@
 from platform import node , system , release
-from user import *
+
 node , system , release = node(), system(), release()
 
+user = "@z0roday"
+
+git = "https://github.com/z0roday"
 
 plat = f'''
 --------------------------------z0roday-------------------------------
