@@ -35,10 +35,10 @@ SMS_SERVICES = [i[0] for i in getmembers(sms, isfunction)]
 CALL_SERVICES = [i[0] for i in getmembers(call, isfunction)]
 MAIN_CHANNEL_ID = os.getenv('MAIN_CHANNEL_ID')
 
-DB_NAME = os.getenv('DB_NAME', 'databasename')
-DB_HOST = os.getenv('DB_HOST', 'localhost')
-DB_USER = os.getenv('DB_USER', 'username')
-DB_PASS = os.getenv('DB_PASS', 'password')
+DB_NAME = os.getenv('DB_NAME')
+DB_HOST = os.getenv('DB_HOST')
+DB_USER = os.getenv('DB_USER')
+DB_PASS = os.getenv('DB_PASS')
 
 bombing_events = {}
 # github.com/z0orday
