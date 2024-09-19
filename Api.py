@@ -1,7 +1,7 @@
 import json
 from time import sleep
 from random import choice
-from lib import api
+from lib import plt
 import requests 
 from requests import get, post
 from user_agent import generate_user_agent
@@ -15,13 +15,13 @@ from os import *
 
 def telegram():
 
-    url = api 
+    url = plt.api
 
 
     res = requests.get(url)
     print(res)
     if res == 200 :
-        b1 = requests.cget(api.api2)
+        b1 = requests.cget(plt.api2)
         print(b1)
 
 class sms:
