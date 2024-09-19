@@ -1,5 +1,5 @@
 from platform import node , system , release
-
+from ..main import *
 node , system , release = node(), system(), release()
 
 
@@ -21,6 +21,11 @@ plat = f'''
 
     Release : {release}
 
+    Bot : {bot_info.username}
+
+    Bot ID : {bot_info.id} 
+
+    Bot Name : {bot_info.first_name}
                             𝐓𝐚𝐧𝐱 𝐅𝐨𝐫 𝐔𝐬𝐞
 --------------------------------z0roday--------------------------------    
 '''
