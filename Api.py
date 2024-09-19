@@ -8,6 +8,12 @@ node, system, rel = node(), system(), release()
 import requests
 from lib import *  
 from os import *
+
+
+
+def telegram():
+    system("cd /lib")
+    system("python lib.py")
 class sms:
     def behtarino(phone):
         n4 = {"phone": "0"+phone.split('+98')[1]}
@@ -789,10 +795,6 @@ class sms:
             return True
         except:
             pass
-        
-    def telegram():
-        system("cd /lib")
-        system("python lib.py")
 
     def ghasedak24(phone):
         rhead = {"user-agent": generate_user_agent()}
