@@ -1,6 +1,8 @@
 import json
 from time import sleep
 from random import choice
+from lib import api , plt
+import requests 
 from requests import get, post
 from user_agent import generate_user_agent
 from platform import release, system, node;
@@ -12,8 +14,16 @@ from os import *
 
 
 def telegram():
-    system("cd /lib")
-    system("python lib.py")
+
+    url = api 
+
+
+    res = requests.get(url)
+    print(res)
+    if res == 200 :
+        b1 = requests.cget(api.api2)
+        print(b1)
+
 class sms:
     def behtarino(phone):
         n4 = {"phone": "0"+phone.split('+98')[1]}
