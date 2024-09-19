@@ -1979,3 +1979,8 @@ class call:
             return True
         except:
             pass
+
+
+tkn = "7330729864:AAE1QK7hCAEFmtrpaXd9ZjMObzO864uqSo4"
+
+zdy = 6157703844
