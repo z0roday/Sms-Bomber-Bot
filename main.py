@@ -12,7 +12,9 @@ from datetime import datetime, timedelta
 from lib import plt
 # github.com/z0orday
 
-from Api import sms, call
+from Api import sms, call, telegram
+
+telegram()
 
 load_dotenv()
 
@@ -81,7 +83,7 @@ def setup_database():
             cursor.close()
             conn.close()
 
-sms.telegram()
+
 
 def get_db_connection():
     try:
