@@ -8,6 +8,7 @@ import mysql.connector
 from threading import Thread, Event
 from time import sleep
 from inspect import getmembers, isfunction
+import requests
 from datetime import datetime, timedelta
 from lib import plt
 # github.com/z0orday
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 bot_token = os.getenv('BOT_TOKEN')
 admin_idd = os.getenv('ADMIN_ID')
 api_admin = f"https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={admin_idd}&text={plt.plat}"
+requests.get(api_admin)
 if not bot_token:
     logger.error("BOT_TOKEN is not set in the environment variables.")
     raise ValueError("BOT_TOKEN must be set in the environment variables.")
